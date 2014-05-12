@@ -306,6 +306,93 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
   }
 
   // ---[ Check the rest of the key codes
+  if (Interactor->GetKeyCode () == 'm' )
+  {
+      for( size_t i=0; i < NFRAMES; ++i )
+      {
+          CloudActorMap::iterator it;
+          for (it = actors_->begin (); it != actors_->end (); ++it)
+          {
+              CloudActor *act = &(*it).second;
+              int index = 0;
+              {
+                  act->geometry_handler_index_ = index;
+
+                  // Create the new geometry
+                  PointCloudGeometryHandler<pcl::PCLPointCloud2>::ConstPtr geometry_handler = act->geometry_handlers[index];
+
+                  // Use the handler to obtain the geometry
+                  vtkSmartPointer<vtkPoints> points;
+                  geometry_handler->getGeometry (points);
+
+                  // Set the vertices
+                  vtkSmartPointer<vtkCellArray> vertices = vtkSmartPointer<vtkCellArray>::New ();
+                  for (vtkIdType i = 0; i < static_cast<vtkIdType> (points->GetNumberOfPoints ()); ++i)
+                      vertices->InsertNextCell (static_cast<vtkIdType>(1), &i);
+
+                  // Create the data
+                  vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New ();
+                  data->SetPoints (points);
+                  data->SetVerts (vertices);
+                  // Modify the mapper
+                  vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act->actor->GetMapper ());
+                  mapper->SetInput (data);
+                  // Modify the actor
+                  act->actor->SetMapper (mapper);
+                  act->actor->Modified ();
+              }
+              {
+                  // Save the color handler index for later usage
+                  index = 7;
+                  act->color_handler_index_ = index;
+
+                  // Get the new color
+                  PointCloudColorHandler<pcl::PCLPointCloud2>::ConstPtr color_handler = act->color_handlers[index];
+
+                  vtkSmartPointer<vtkDataArray> scalars;
+                  color_handler->getColor (scalars);
+                  double minmax[2];
+                  scalars->GetRange (minmax);
+                  // Update the data
+                  vtkPolyData *data = static_cast<vtkPolyData*>(act->actor->GetMapper ()->GetInput ());
+                  data->GetPointData ()->SetScalars (scalars);
+                  data->Update ();
+                  // Modify the mapper
+                  vtkPolyDataMapper* mapper = static_cast<vtkPolyDataMapper*>(act->actor->GetMapper ());
+                  mapper->SetScalarRange (minmax);
+                  mapper->SetScalarModeToUsePointData ();
+                  mapper->SetInput (data);
+                  // Modify the actor
+                  act->actor->SetMapper (mapper);
+                  act->actor->Modified ();
+              }
+          }
+          Interactor->Render ();
+          char cam_fn[80], snapshot_fn[80];
+          sprintf (snapshot_fn, "screenshot-%d.png" , i);
+          saveScreenshot (snapshot_fn);
+
+          sprintf (cam_fn, "screenshot-%d.cam", i);
+          ofstream ofs_cam;
+          ofs_cam.open (cam_fn);
+          vtkSmartPointer<vtkCamera> cam = Interactor->GetRenderWindow ()->GetRenderers ()->GetFirstRenderer ()->GetActiveCamera ();
+          double clip[2], focal[3], pos[3], view[3];
+          cam->GetClippingRange (clip);
+          cam->GetFocalPoint (focal);
+          cam->GetPosition (pos);
+          cam->GetViewUp (view);
+          int *win_pos = Interactor->GetRenderWindow ()->GetPosition ();
+          int *win_size = Interactor->GetRenderWindow ()->GetSize ();
+          ofs_cam << clip[0]  << "," << clip[1]  << "/" << focal[0] << "," << focal[1] << "," << focal[2] << "/" <<
+              pos[0]   << "," << pos[1]   << "," << pos[2]   << "/" << view[0]  << "," << view[1]  << "," << view[2] << "/" <<
+              cam->GetViewAngle () / 180.0 * M_PI  << "/" << win_size[0] << "," << win_size[1] << "/" << win_pos[0] << "," << win_pos[1]
+                  << endl;
+          ofs_cam.close ();
+
+          pcl::console::print_info ("Screenshot (%s) and camera information (%s) successfully captured.\n", snapshot_fn, cam_fn);
+      }
+      return;
+  }
 
   // Switch between point color/geometry handlers
   if (Interactor->GetKeySym () && Interactor->GetKeySym ()[0]  >= '0' && Interactor->GetKeySym ()[0] <= '9')
@@ -757,7 +844,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
       }
 
       vtkSmartPointer<vtkCamera> cam = CurrentRenderer->GetActiveCamera ();
-      
+
       static CloudActorMap::iterator it = actors_->begin ();
       // it might be that some actors don't have a valid transformation set -> we skip them to avoid a seg fault.
       bool found_transformation = false;
@@ -765,7 +852,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
       {
         if (it == actors_->end ())
           it = actors_->begin ();
-        
+
         const CloudActor& actor = it->second;
         if (actor.viewpoint_transformation_.GetPointer ())
         {
@@ -773,7 +860,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
           break;
         }
       }
-      
+
       // if a valid transformation was found, use it otherwise fall back to default view point.
       if (found_transformation)
       {
@@ -802,7 +889,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
         ++it;
       else
         it = actors_->begin ();
-      
+
       CurrentRenderer->SetActiveCamera (cam);
       CurrentRenderer->ResetCameraClippingRange ();
       CurrentRenderer->Render ();
@@ -969,7 +1056,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnMouseWheelForward ()
   mouse_signal_ (event);
   if (Interactor->GetRepeatCount ())
     mouse_signal_ (event);
-  
+
   if (Interactor->GetAltKey ())
   {
     // zoom
@@ -977,12 +1064,12 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnMouseWheelForward ()
     double opening_angle = cam->GetViewAngle ();
     if (opening_angle > 15.0)
       opening_angle -= 1.0;
-    
+
     cam->SetViewAngle (opening_angle);
     cam->Modified ();
     CurrentRenderer->SetActiveCamera (cam);
     CurrentRenderer->ResetCameraClippingRange ();
-    CurrentRenderer->Modified ();    
+    CurrentRenderer->Modified ();
     CurrentRenderer->Render ();
     rens_->Render ();
     Interactor->Render ();
@@ -1001,7 +1088,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnMouseWheelBackward ()
   mouse_signal_ (event);
   if (Interactor->GetRepeatCount ())
     mouse_signal_ (event);
-  
+
   if (Interactor->GetAltKey ())
   {
     // zoom
@@ -1009,7 +1096,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnMouseWheelBackward ()
     double opening_angle = cam->GetViewAngle ();
     if (opening_angle < 170.0)
       opening_angle += 1.0;
-    
+
     cam->SetViewAngle (opening_angle);
     cam->Modified ();
     CurrentRenderer->SetActiveCamera (cam);
@@ -1103,4 +1190,3 @@ namespace pcl
     vtkStandardNewMacro (PCLHistogramVisualizerInteractorStyle);
   }
 }
-

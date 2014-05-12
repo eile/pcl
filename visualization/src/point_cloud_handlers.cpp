@@ -49,17 +49,17 @@ pcl::visualization::PointCloudColorHandlerCustom<pcl::PCLPointCloud2>::getColor 
 {
   if (!capable_ || !cloud_)
     return (false);
-  
+
   if (!scalars)
     scalars = vtkSmartPointer<vtkUnsignedCharArray>::New ();
   scalars->SetNumberOfComponents (3);
-  
+
   vtkIdType nr_points = cloud_->width * cloud_->height;
   reinterpret_cast<vtkUnsignedCharArray*>(&(*scalars))->SetNumberOfTuples (nr_points);
-  
+
   // Get a random color
   unsigned char* colors = new unsigned char[nr_points * 3];
-  
+
   // Color every point
   for (vtkIdType cp = 0; cp < nr_points; ++cp)
   {
@@ -77,19 +77,19 @@ pcl::visualization::PointCloudColorHandlerRandom<pcl::PCLPointCloud2>::getColor 
 {
   if (!capable_ || !cloud_)
     return (false);
-  
+
   if (!scalars)
     scalars = vtkSmartPointer<vtkUnsignedCharArray>::New ();
   scalars->SetNumberOfComponents (3);
-  
+
   vtkIdType nr_points = cloud_->width * cloud_->height;
   reinterpret_cast<vtkUnsignedCharArray*>(&(*scalars))->SetNumberOfTuples (nr_points);
-  
+
   // Get a random color
   unsigned char* colors = new unsigned char[nr_points * 3];
   double r, g, b;
   pcl::visualization::getRandomColors (r, g, b);
-  
+
   long r_ = pcl_lrint (r * 255.0), g_ = pcl_lrint (g * 255.0), b_ = pcl_lrint (b * 255.0);
 
   // Color every point
@@ -144,17 +144,17 @@ pcl::visualization::PointCloudColorHandlerRGBField<pcl::PCLPointCloud2>::getColo
   pcl::RGB rgb_data;
   int point_offset = cloud_->fields[field_idx_].offset;
   int j = 0;
-  
+
   // If XYZ present, check if the points are invalid
   int x_idx = pcl::getFieldIndex (*cloud_, "x");
   if (x_idx != -1)
   {
     float x_data, y_data, z_data;
     int x_point_offset = cloud_->fields[x_idx].offset;
-    
+
     // Color every point
-    for (vtkIdType cp = 0; cp < nr_points; ++cp, 
-                                           point_offset += cloud_->point_step, 
+    for (vtkIdType cp = 0; cp < nr_points; ++cp,
+                                           point_offset += cloud_->point_step,
                                            x_point_offset += cloud_->point_step)
     {
       // Copy the value at the specified field
@@ -258,8 +258,8 @@ pcl::visualization::PointCloudColorHandlerHSVField<pcl::PCLPointCloud2>::getColo
     int x_point_offset = cloud_->fields[x_idx].offset;
 
     // Color every point
-    for (vtkIdType cp = 0; cp < nr_points; ++cp, 
-                                           point_offset += cloud_->point_step, 
+    for (vtkIdType cp = 0; cp < nr_points; ++cp,
+                                           point_offset += cloud_->point_step,
                                            x_point_offset += cloud_->point_step)
     {
       // Copy the value at the specified field
@@ -283,7 +283,7 @@ pcl::visualization::PointCloudColorHandlerHSVField<pcl::PCLPointCloud2>::getColo
       {
         colors[idx] = colors[idx+1] = colors[idx+2] = static_cast<unsigned char> (v_data);
         continue;   //skip to next point
-      } 
+      }
       float a = h_data / 60;
       int   i = static_cast<int> (floor (a));
       float f = a - static_cast<float> (i);
@@ -291,7 +291,7 @@ pcl::visualization::PointCloudColorHandlerHSVField<pcl::PCLPointCloud2>::getColo
       float q = v_data * (1 - s_data * f);
       float t = v_data * (1 - s_data * (1 - f));
 
-      switch (i) 
+      switch (i)
       {
         case 0:
         {
@@ -359,7 +359,7 @@ pcl::visualization::PointCloudColorHandlerHSVField<pcl::PCLPointCloud2>::getColo
       {
         colors[idx] = colors[idx+1] = colors[idx+2] = static_cast<unsigned char> (v_data);
         continue;   //skip to next point
-      } 
+      }
       float a = h_data / 60;
       int   i = static_cast<int> (floor (a));
       float f = a - static_cast<float> (i);
@@ -367,7 +367,7 @@ pcl::visualization::PointCloudColorHandlerHSVField<pcl::PCLPointCloud2>::getColo
       float q = v_data * (1 - s_data * f);
       float t = v_data * (1 - s_data * (1 - f));
 
-      switch (i) 
+      switch (i)
       {
         case 0:
         {
@@ -423,7 +423,7 @@ pcl::visualization::PointCloudColorHandlerHSVField<pcl::PCLPointCloud2>::getColo
 ///////////////////////////////////////////////////////////////////////////////////////////
 pcl::visualization::PointCloudColorHandlerGenericField<pcl::PCLPointCloud2>::PointCloudColorHandlerGenericField (
     const pcl::visualization::PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloudConstPtr &cloud,
-    const std::string &field_name) : 
+    const std::string &field_name) :
   pcl::visualization::PointCloudColorHandler<pcl::PCLPointCloud2>::PointCloudColorHandler (cloud),
   field_name_ (field_name)
 {
@@ -459,10 +459,10 @@ pcl::visualization::PointCloudColorHandlerGenericField<pcl::PCLPointCloud2>::get
   {
     float x_data, y_data, z_data;
     int x_point_offset = cloud_->fields[x_idx].offset;
-    
+
     // Color every point
     for (vtkIdType cp = 0; cp < nr_points; ++cp,
-                                           point_offset += cloud_->point_step, 
+                                           point_offset += cloud_->point_step,
                                            x_point_offset += cloud_->point_step)
     {
       memcpy (&x_data, &cloud_->data[x_point_offset], sizeof (float));
@@ -584,7 +584,7 @@ pcl::visualization::PointCloudColorHandlerRGBAField<pcl::PCLPointCloud2>::getCol
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-void 
+void
 pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry (vtkSmartPointer<vtkPoints> &points) const
 {
   if (!capable_)
@@ -599,31 +599,52 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
   vtkIdType nr_points = cloud_->width * cloud_->height;
 
   // Add all points
-  float dim;
   vtkIdType j = 0;    // true point index
   float* pts = static_cast<float*> (malloc (nr_points * 3 * sizeof (float)));
   int point_offset = 0;
+  static const size_t nSteps = NFRAMES;
+  static size_t model = 0;
+  static size_t step = nSteps;
 
   // If the dataset has no invalid values, just copy all of them
   if (cloud_->is_dense)
   {
+    float dim[3];
     for (vtkIdType i = 0; i < nr_points; ++i, point_offset+=cloud_->point_step)
     {
       // Copy the value at the specified field
-      memcpy (&dim, &cloud_->data[point_offset + cloud_->fields[field_x_idx_].offset], sizeof (float));
-      pts[i * 3 + 0] = dim;
+      memcpy (dim+0, &cloud_->data[point_offset + cloud_->fields[field_x_idx_].offset], sizeof (float));
+      memcpy (dim+1, &cloud_->data[point_offset + cloud_->fields[field_y_idx_].offset], sizeof (float));
+      memcpy (dim+2, &cloud_->data[point_offset + cloud_->fields[field_z_idx_].offset], sizeof (float));
 
-      memcpy (&dim, &cloud_->data[point_offset + cloud_->fields[field_y_idx_].offset], sizeof (float));
-      pts[i * 3 + 1] = dim;
+#define RISE
+//#define EXPLODE
 
-      memcpy (&dim, &cloud_->data[point_offset + cloud_->fields[field_z_idx_].offset], sizeof (float));
-      pts[i * 3 + 2] = dim;
+#ifdef RISE
+      dim[2] = dim[2] * float( step ) / float( nSteps ) +
+               float( step ) / float( NFRAMES ) * 50.f ;
+#endif
+#ifdef EXPLODE
+      const float scale = float( step+1 ) * 10.f;
+      dim[0] *= scale;
+      dim[1] *= scale;
+      dim[2] *= scale;
+#endif
+
+      pts[i * 3 + 0] = dim[0];
+      pts[i * 3 + 1] = dim[1];
+      pts[i * 3 + 2] = dim[2];
     }
+    if( ((++model) % 11) == 0 )
+        if( ++step > nSteps )
+            step = 0;
+
     data->SetArray (&pts[0], nr_points * 3, 0);
     points->SetData (data);
   }
   else
   {
+      float dim;
     for (vtkIdType i = 0; i < nr_points; ++i, point_offset+=cloud_->point_step)
     {
       // Copy the value at the specified field
@@ -684,7 +705,7 @@ pcl::visualization::PointCloudGeometryHandlerSurfaceNormal<pcl::PCLPointCloud2>:
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 pcl::visualization::PointCloudGeometryHandlerCustom<pcl::PCLPointCloud2>::PointCloudGeometryHandlerCustom (
-    const PointCloudConstPtr &cloud, const std::string &x_field_name, const std::string &y_field_name, const std::string &z_field_name) 
+    const PointCloudConstPtr &cloud, const std::string &x_field_name, const std::string &y_field_name, const std::string &z_field_name)
 : pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::PointCloudGeometryHandler (cloud), field_name_ ()
 {
   field_x_idx_ = pcl::getFieldIndex (*cloud, x_field_name);
@@ -708,4 +729,3 @@ pcl::visualization::PointCloudGeometryHandlerCustom<pcl::PCLPointCloud2>::PointC
   PCL_INSTANTIATE(PointCloudGeometryHandlerXYZ, PCL_XYZ_POINT_TYPES)
   PCL_INSTANTIATE(PointCloudGeometryHandlerSurfaceNormal, PCL_NORMAL_POINT_TYPES)
 #endif
-
