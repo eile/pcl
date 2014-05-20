@@ -604,7 +604,10 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
   int point_offset = 0;
   static const size_t nSteps = NFRAMES;
   static size_t model = 0;
-  static size_t step = nSteps;
+  static ssize_t step = -1;
+  ssize_t pos = step;
+  if( step == -1 )
+      pos = 0;
 
   // If the dataset has no invalid values, just copy all of them
   if (cloud_->is_dense)
@@ -617,18 +620,18 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
       memcpy (dim+1, &cloud_->data[point_offset + cloud_->fields[field_y_idx_].offset], sizeof (float));
       memcpy (dim+2, &cloud_->data[point_offset + cloud_->fields[field_z_idx_].offset], sizeof (float));
 
-#define RISE
-//#define EXPLODE
+//#define RISE
+#define EXPLODE
 
 #ifdef RISE
-      dim[2] = dim[2] * float( step ) / float( nSteps ) +
-               float( step ) / float( NFRAMES ) * 50.f ;
+      dim[2] = dim[2] * float( pos ) / float( nSteps ) +
+               float( pos ) / float( NFRAMES ) * 50.f ;
 #endif
 #ifdef EXPLODE
-      const float scale = float( step+1 ) * 10.f;
-      dim[0] *= scale;
-      dim[1] *= scale;
-      dim[2] *= scale;
+      // dim[1] = dim[1] * ( pos / float( NFRAMES ) + 1.f ) -
+      //          ( pos / float( NFRAMES ) * 10.f + 1.f ) * 70.f ;
+      dim[2] = dim[2] * ( pos / float( NFRAMES ) * 10.f + 1.f )
+          + float( pos / float( NFRAMES ) * 10.f + 1 ) * 30. ;
 #endif
 
       pts[i * 3 + 0] = dim[0];
@@ -637,7 +640,7 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
     }
     if( ((++model) % 11) == 0 )
         if( ++step > nSteps )
-            step = 0;
+            step = -1;
 
     data->SetArray (&pts[0], nr_points * 3, 0);
     points->SetData (data);

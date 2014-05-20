@@ -308,7 +308,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
   // ---[ Check the rest of the key codes
   if (Interactor->GetKeyCode () == 'm' )
   {
-      for( size_t i=0; i < NFRAMES; ++i )
+      for( size_t i=0; i < NFRAMES+1; ++i )
       {
           CloudActorMap::iterator it;
           for (it = actors_->begin (); it != actors_->end (); ++it)
@@ -368,11 +368,12 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
               }
           }
           Interactor->Render ();
+#if 1
           char cam_fn[80], snapshot_fn[80];
-          sprintf (snapshot_fn, "screenshot-%d.png" , i);
+          sprintf (snapshot_fn, "screenshot-%04d.png" , i);
           saveScreenshot (snapshot_fn);
 
-          sprintf (cam_fn, "screenshot-%d.cam", i);
+          sprintf (cam_fn, "screenshot-%04d.cam", i);
           ofstream ofs_cam;
           ofs_cam.open (cam_fn);
           vtkSmartPointer<vtkCamera> cam = Interactor->GetRenderWindow ()->GetRenderers ()->GetFirstRenderer ()->GetActiveCamera ();
@@ -388,8 +389,8 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
               cam->GetViewAngle () / 180.0 * M_PI  << "/" << win_size[0] << "," << win_size[1] << "/" << win_pos[0] << "," << win_pos[1]
                   << endl;
           ofs_cam.close ();
-
           pcl::console::print_info ("Screenshot (%s) and camera information (%s) successfully captured.\n", snapshot_fn, cam_fn);
+#endif
       }
       return;
   }
