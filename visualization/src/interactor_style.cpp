@@ -64,6 +64,7 @@
 #include <vtkAreaPicker.h>
 
 #include <pcl/visualization/vtk/vtkVertexBufferObjectMapper.h>
+#include <pcl/visualization/pcl_visualizer.h>
 
 #define ORIENT_MODE 0
 #define SELECT_MODE 1
@@ -248,6 +249,37 @@ pcl::visualization::PCLVisualizerInteractorStyle::registerAreaPickingCallback (b
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+void _setCamera( vtkSmartPointer<vtkCamera> cam, const size_t timestep )
+{
+    static pcl::visualization::Camera begin =
+        pcl::visualization::PCLVisualizer::getCameraParameters( "begin.cam" );
+    static pcl::visualization::Camera end =
+        pcl::visualization::PCLVisualizer::getCameraParameters( "end.cam" );
+
+    if( ::memcmp( &begin, &end, sizeof( begin )) == 0 ) // gaaah!
+        return;
+
+    const float p2 = float( timestep ) / float( NFRAMES );
+    const float p1 = 1.f - p2;
+
+    cam->SetPosition( p1 * begin.pos[0] + p2 * end.pos[0],
+                      p1 * begin.pos[1] + p2 * end.pos[1],
+                      p1 * begin.pos[2] + p2 * end.pos[2] );
+    cam->SetFocalPoint( p1 * begin.focal[0] + p2 * end.focal[0],
+                        p1 * begin.focal[1] + p2 * end.focal[1],
+                        p1 * begin.focal[2] + p2 * end.focal[2] );
+    cam->SetViewUp( p1 * begin.view[0] + p2 * end.view[0],
+                    p1 * begin.view[1] + p2 * end.view[1],
+                    p1 * begin.view[2] + p2 * end.view[2] );
+    const double clip[2] = { p1 * begin.clip[0] + p2 * end.clip[0],
+                             p1 * begin.clip[1] + p2 * end.clip[1] };
+    cam->SetClippingRange( clip );
+    cam->SetViewAngle( (p1 * begin.fovy + p2 * end.fovy) * 180.0 / M_PI);
+}
+}
+
 void
 pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
 {
@@ -377,6 +409,8 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
           ofstream ofs_cam;
           ofs_cam.open (cam_fn);
           vtkSmartPointer<vtkCamera> cam = Interactor->GetRenderWindow ()->GetRenderers ()->GetFirstRenderer ()->GetActiveCamera ();
+          _setCamera( cam, i );
+
           double clip[2], focal[3], pos[3], view[3];
           cam->GetClippingRange (clip);
           cam->GetFocalPoint (focal);

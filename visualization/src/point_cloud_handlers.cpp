@@ -620,8 +620,8 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
       memcpy (dim+1, &cloud_->data[point_offset + cloud_->fields[field_y_idx_].offset], sizeof (float));
       memcpy (dim+2, &cloud_->data[point_offset + cloud_->fields[field_z_idx_].offset], sizeof (float));
 
-//#define RISE
-#define EXPLODE
+#define RISE
+//#define EXPLODE
 
 #ifdef RISE
       dim[2] = dim[2] * float( pos ) / float( nSteps ) +

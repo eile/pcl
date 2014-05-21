@@ -2021,131 +2021,135 @@ pcl::visualization::PCLVisualizer::resetCameraViewpoint (const std::string &id)
 bool
 pcl::visualization::PCLVisualizer::getCameraParameters (int argc, char **argv)
 {
-  Camera camera_temp;
   for (int i = 1; i < argc; i++)
   {
     if ((strcmp (argv[i], "-cam") == 0) && (++i < argc))
     {
-      std::ifstream fs;
-      std::string camfile = std::string (argv[i]);
-      std::string line;
-
-      std::vector<std::string> camera;
-      if (camfile.find (".cam") == std::string::npos)
-      {
-        // Assume we have clip/focal/pos/view
-        boost::split (camera, argv[i], boost::is_any_of ("/"), boost::token_compress_on);
-      }
-      else
-      {
-        // Assume that if we don't have clip/focal/pos/view, a filename.cam was given as a parameter
-        fs.open (camfile.c_str ());
-        while (!fs.eof ())
-        {
-          getline (fs, line);
-          if (line == "")
-            continue;
-
-          boost::split (camera, line, boost::is_any_of ("/"), boost::token_compress_on);
-          break;
-        }
-        fs.close ();
-      }
-
-      // look for '/' as a separator
-      if (camera.size () != 7)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Camera parameters given, but with an invalid number of options (%lu vs 7)!\n", static_cast<unsigned long> (camera.size ()));
-        return (false);
-      }
-
-      std::string clip_str  = camera.at (0);
-      std::string focal_str = camera.at (1);
-      std::string pos_str   = camera.at (2);
-      std::string view_str  = camera.at (3);
-      std::string fovy_str  = camera.at (4);
-      std::string win_size_str = camera.at (5);
-      std::string win_pos_str  = camera.at (6);
-
-      // Get each camera setting separately and parse for ','
-      std::vector<std::string> clip_st;
-      boost::split (clip_st, clip_str, boost::is_any_of (","), boost::token_compress_on);
-      if (clip_st.size () != 2)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera clipping angle!\n");
-        return (false);
-      }
-      camera_temp.clip[0] = atof (clip_st.at (0).c_str ());
-      camera_temp.clip[1] = atof (clip_st.at (1).c_str ());
-
-      std::vector<std::string> focal_st;
-      boost::split (focal_st, focal_str, boost::is_any_of (","), boost::token_compress_on);
-      if (focal_st.size () != 3)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera focal point!\n");
-        return (false);
-      }
-      camera_temp.focal[0] = atof (focal_st.at (0).c_str ());
-      camera_temp.focal[1] = atof (focal_st.at (1).c_str ());
-      camera_temp.focal[2] = atof (focal_st.at (2).c_str ());
-
-      std::vector<std::string> pos_st;
-      boost::split (pos_st, pos_str, boost::is_any_of (","), boost::token_compress_on);
-      if (pos_st.size () != 3)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera position!\n");
-        return (false);
-      }
-      camera_temp.pos[0] = atof (pos_st.at (0).c_str ());
-      camera_temp.pos[1] = atof (pos_st.at (1).c_str ());
-      camera_temp.pos[2] = atof (pos_st.at (2).c_str ());
-
-      std::vector<std::string> view_st;
-      boost::split (view_st, view_str, boost::is_any_of (","), boost::token_compress_on);
-      if (view_st.size () != 3)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera viewup!\n");
-        return (false);
-      }
-      camera_temp.view[0] = atof (view_st.at (0).c_str ());
-      camera_temp.view[1] = atof (view_st.at (1).c_str ());
-      camera_temp.view[2] = atof (view_st.at (2).c_str ());
-
-      std::vector<std::string> fovy_size_st;
-      boost::split (fovy_size_st, fovy_str, boost::is_any_of (","), boost::token_compress_on);
-      if (fovy_size_st.size () != 1)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for field of view angle!\n");
-        return (false);
-      }
-      camera_temp.fovy = atof (fovy_size_st.at (0).c_str ());
-
-      std::vector<std::string> win_size_st;
-      boost::split (win_size_st, win_size_str, boost::is_any_of (","), boost::token_compress_on);
-      if (win_size_st.size () != 2)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window size!\n");
-        return (false);
-      }
-      camera_temp.window_size[0] = atof (win_size_st.at (0).c_str ());
-      camera_temp.window_size[1] = atof (win_size_st.at (1).c_str ());
-
-      std::vector<std::string> win_pos_st;
-      boost::split (win_pos_st, win_pos_str, boost::is_any_of (","), boost::token_compress_on);
-      if (win_pos_st.size () != 2)
-      {
-        pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window position!\n");
-        return (false);
-      }
-      camera_temp.window_pos[0] = atof (win_pos_st.at (0).c_str ());
-      camera_temp.window_pos[1] = atof (win_pos_st.at (1).c_str ());
-
-      setCameraParameters (camera_temp);
-
+      setCameraParameters( getCameraParameters( argv[i] ));
       return (true);
     }
   }
   return (false);
+}
+
+pcl::visualization::Camera
+pcl::visualization::PCLVisualizer::getCameraParameters( const std::string& spec)
+{
+  Camera camera_temp;
+  std::ifstream fs;
+  std::string camfile = std::string (spec);
+  std::string line;
+
+  std::vector<std::string> camera;
+  if (camfile.find (".cam") == std::string::npos)
+  {
+    // Assume we have clip/focal/pos/view
+    boost::split (camera, spec, boost::is_any_of ("/"), boost::token_compress_on);
+  }
+  else
+  {
+    // Assume that if we don't have clip/focal/pos/view, a filename.cam was given as a parameter
+    fs.open (camfile.c_str ());
+    while (!fs.eof ())
+    {
+      getline (fs, line);
+      if (line == "")
+        continue;
+
+      boost::split (camera, line, boost::is_any_of ("/"), boost::token_compress_on);
+      break;
+    }
+    fs.close ();
+  }
+
+  // look for '/' as a separator
+  if (camera.size () != 7)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Camera parameters given, but with an invalid number of options (%lu vs 7)!\n", static_cast<unsigned long> (camera.size ()));
+    return camera_temp;
+  }
+
+  std::string clip_str  = camera.at (0);
+  std::string focal_str = camera.at (1);
+  std::string pos_str   = camera.at (2);
+  std::string view_str  = camera.at (3);
+  std::string fovy_str  = camera.at (4);
+  std::string win_size_str = camera.at (5);
+  std::string win_pos_str  = camera.at (6);
+
+  // Get each camera setting separately and parse for ','
+  std::vector<std::string> clip_st;
+  boost::split (clip_st, clip_str, boost::is_any_of (","), boost::token_compress_on);
+  if (clip_st.size () != 2)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera clipping angle!\n");
+    return camera_temp;
+  }
+  camera_temp.clip[0] = atof (clip_st.at (0).c_str ());
+  camera_temp.clip[1] = atof (clip_st.at (1).c_str ());
+
+  std::vector<std::string> focal_st;
+  boost::split (focal_st, focal_str, boost::is_any_of (","), boost::token_compress_on);
+  if (focal_st.size () != 3)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera focal point!\n");
+    return camera_temp;
+  }
+  camera_temp.focal[0] = atof (focal_st.at (0).c_str ());
+  camera_temp.focal[1] = atof (focal_st.at (1).c_str ());
+  camera_temp.focal[2] = atof (focal_st.at (2).c_str ());
+
+  std::vector<std::string> pos_st;
+  boost::split (pos_st, pos_str, boost::is_any_of (","), boost::token_compress_on);
+  if (pos_st.size () != 3)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera position!\n");
+    return camera_temp;
+  }
+  camera_temp.pos[0] = atof (pos_st.at (0).c_str ());
+  camera_temp.pos[1] = atof (pos_st.at (1).c_str ());
+  camera_temp.pos[2] = atof (pos_st.at (2).c_str ());
+
+  std::vector<std::string> view_st;
+  boost::split (view_st, view_str, boost::is_any_of (","), boost::token_compress_on);
+  if (view_st.size () != 3)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for camera viewup!\n");
+    return camera_temp;
+  }
+  camera_temp.view[0] = atof (view_st.at (0).c_str ());
+  camera_temp.view[1] = atof (view_st.at (1).c_str ());
+  camera_temp.view[2] = atof (view_st.at (2).c_str ());
+
+  std::vector<std::string> fovy_size_st;
+  boost::split (fovy_size_st, fovy_str, boost::is_any_of (","), boost::token_compress_on);
+  if (fovy_size_st.size () != 1)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for field of view angle!\n");
+    return camera_temp;;
+  }
+  camera_temp.fovy = atof (fovy_size_st.at (0).c_str ());
+
+  std::vector<std::string> win_size_st;
+  boost::split (win_size_st, win_size_str, boost::is_any_of (","), boost::token_compress_on);
+  if (win_size_st.size () != 2)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window size!\n");
+    return camera_temp;;
+  }
+  camera_temp.window_size[0] = atof (win_size_st.at (0).c_str ());
+  camera_temp.window_size[1] = atof (win_size_st.at (1).c_str ());
+
+  std::vector<std::string> win_pos_st;
+  boost::split (win_pos_st, win_pos_str, boost::is_any_of (","), boost::token_compress_on);
+  if (win_pos_st.size () != 2)
+  {
+    pcl::console::print_error ("[PCLVisualizer::getCameraParameters] Invalid parameters given for window position!\n");
+    return camera_temp;;
+  }
+  camera_temp.window_pos[0] = atof (win_pos_st.at (0).c_str ());
+  camera_temp.window_pos[1] = atof (win_pos_st.at (1).c_str ());
+  return camera_temp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -4212,7 +4216,7 @@ pcl::visualization::PCLVisualizer::setWindowBorders (bool mode)
   if (win_)
     win_->SetBorders (mode);
 }
-   
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setPosition (int x, int y)
@@ -4220,7 +4224,7 @@ pcl::visualization::PCLVisualizer::setPosition (int x, int y)
   if (win_)
     win_->SetPosition (x, y);
 }
- 
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::setSize (int xw, int yw)
@@ -4249,7 +4253,7 @@ pcl::visualization::PCLVisualizer::close ()
 void
 pcl::visualization::PCLVisualizer::removeCorrespondences (
     const std::string &id, int viewport)
-{ 
+{
   removeShape (id, viewport);
 }
 
@@ -4279,13 +4283,13 @@ pcl::visualization::PCLVisualizer::getGeometryHandlerIndex (const std::string &i
 bool
 pcl::visualization::PCLVisualizer::wasStopped () const
 {
-  if (interactor_ != NULL) 
+  if (interactor_ != NULL)
 #if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
     return (interactor_->stopped);
 #else
-    return (stopped_); 
+    return (stopped_);
 #endif
-  else 
+  else
     return (true);
 }
 
@@ -4293,11 +4297,11 @@ pcl::visualization::PCLVisualizer::wasStopped () const
 void
 pcl::visualization::PCLVisualizer::resetStoppedFlag ()
 {
-  if (interactor_ != NULL) 
+  if (interactor_ != NULL)
 #if ((VTK_MAJOR_VERSION == 5) && (VTK_MINOR_VERSION <= 4))
     interactor_->stopped = false;
 #else
-    stopped_ = false; 
+    stopped_ = false;
 #endif
 }
 
@@ -4327,7 +4331,7 @@ pcl::visualization::PCLVisualizer::ExitMainLoopTimerCallback::Execute (
   pcl_visualizer->interactor_->TerminateApp ();
 #endif
 }
-  
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 void
 pcl::visualization::PCLVisualizer::ExitCallback::Execute (
