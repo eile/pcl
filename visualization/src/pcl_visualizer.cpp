@@ -2594,6 +2594,7 @@ pcl::visualization::PCLVisualizer::createViewPortCamera (const int viewport)
 bool
 pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, const std::string &id, int viewport)
 {
+    return true;
   std::string tid;
   if (id.empty ())
     tid = text;
@@ -2630,6 +2631,7 @@ pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, i
 bool
 pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, double r, double g, double b, const std::string &id, int viewport)
 {
+    return true;
   std::string tid;
   if (id.empty ())
     tid = text;
@@ -2666,6 +2668,7 @@ pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, i
 bool
 pcl::visualization::PCLVisualizer::addText (const std::string &text, int xpos, int ypos, int fontsize, double r, double g, double b, const std::string &id, int viewport)
 {
+    return true;
   std::string tid;
   if (id.empty ())
     tid = text;
