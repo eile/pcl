@@ -131,6 +131,7 @@ pcl::visualization::PCLVisualizer::PCLVisualizer (const std::string &name, const
   update_fps_->actor = txt;
   update_fps_->pcl_visualizer = this;
   update_fps_->decimated = false;
+  update_fps_->actor->SetVisibility (false);
   ren->AddActor (txt);
 
   // Create a RendererWindow
@@ -195,6 +196,7 @@ pcl::visualization::PCLVisualizer::PCLVisualizer (int &argc, char **argv, const 
   update_fps_->actor = txt;
   update_fps_->pcl_visualizer = this;
   update_fps_->decimated = false;
+  update_fps_->actor->SetVisibility (false);
   ren->AddActor (txt);
 
   // Create a RendererWindow
@@ -3408,7 +3410,7 @@ pcl::visualization::PCLVisualizer::setRepresentationToWireframeForAllActors ()
 void
 pcl::visualization::PCLVisualizer::setShowFPS (bool show_fps)
 {
-  update_fps_->actor->SetVisibility (show_fps);
+    //update_fps_->actor->SetVisibility (show_fps);
 }
 
 
