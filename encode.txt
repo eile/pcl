@@ -1,0 +1,1 @@
+mencoder mf://\*.png -mf fps=60:type=png -ovc x264 -x264encopts preset=faster:tune=film:threads=auto:crf=5:threads=8 -o movie.avi && open movie.avi
