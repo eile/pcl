@@ -180,9 +180,11 @@ pcl::visualization::PointCloudColorHandlerRGBField<pcl::PCLPointCloud2>::getColo
         continue;
 
 #ifdef GRAYSCALE
-      const float lum = (rgb_data.r + rgb_data.g + rgb_data.b) / 3.f;
       const float factor = float( pos ) / float( nSteps );
       const float factor1 = 1.f - factor;
+
+      const float lum = factor * (rgb_data.r + rgb_data.g + rgb_data.b) / 3.f +
+                        factor1 * 128.f;
 
       colors[j + 0] = factor * rgb_data.r + factor1 * lum;
       colors[j + 1] = factor * rgb_data.g + factor1 * lum;
