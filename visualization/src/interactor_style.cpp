@@ -409,7 +409,7 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
           ofstream ofs_cam;
           ofs_cam.open (cam_fn);
           vtkSmartPointer<vtkCamera> cam = Interactor->GetRenderWindow ()->GetRenderers ()->GetFirstRenderer ()->GetActiveCamera ();
-          _setCamera( cam, i );
+          //_setCamera( cam, i );
 
           double clip[2], focal[3], pos[3], view[3];
           cam->GetClippingRange (clip);

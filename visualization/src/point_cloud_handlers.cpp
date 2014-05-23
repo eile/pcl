@@ -43,6 +43,11 @@
 #include <pcl/impl/instantiate.hpp>
 #include <pcl/point_types.h>
 
+#define RISE
+#define GRAYSCALE
+//#define EXPLODE
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 bool
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PCLPointCloud2>::getColor (vtkSmartPointer<vtkDataArray> &scalars) const
@@ -145,6 +150,13 @@ pcl::visualization::PointCloudColorHandlerRGBField<pcl::PCLPointCloud2>::getColo
   int point_offset = cloud_->fields[field_idx_].offset;
   int j = 0;
 
+  static const size_t nSteps = NFRAMES;
+  static size_t model = 0;
+  static ssize_t step = -1;
+  ssize_t pos = step;
+  if( step == -1 )
+      pos = 0;
+
   // If XYZ present, check if the points are invalid
   int x_idx = pcl::getFieldIndex (*cloud_, "x");
   if (x_idx != -1)
@@ -167,9 +179,15 @@ pcl::visualization::PointCloudColorHandlerRGBField<pcl::PCLPointCloud2>::getColo
       if (!pcl_isfinite (x_data) || !pcl_isfinite (y_data) || !pcl_isfinite (z_data))
         continue;
 
-      colors[j + 0] = rgb_data.r;
-      colors[j + 1] = rgb_data.g;
-      colors[j + 2] = rgb_data.b;
+#ifdef GRAYSCALE
+      const float lum = (rgb_data.r + rgb_data.g + rgb_data.b) / 3.f;
+      const float factor = float( pos ) / float( nSteps );
+      const float factor1 = 1.f - factor;
+
+      colors[j + 0] = factor * rgb_data.r + factor1 * lum;
+      colors[j + 1] = factor * rgb_data.g + factor1 * lum;
+      colors[j + 2] = factor * rgb_data.b + factor1 * lum;
+#endif
       j += 3;
     }
   }
@@ -188,6 +206,10 @@ pcl::visualization::PointCloudColorHandlerRGBField<pcl::PCLPointCloud2>::getColo
       j += 3;
     }
   }
+  if( ((++model) % 11) == 0 )
+      if( ++step > nSteps )
+          step = -1;
+
   if (j != 0)
     reinterpret_cast<vtkUnsignedCharArray*>(&(*scalars))->SetArray (colors, j, 0);
   else
@@ -619,9 +641,6 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
       memcpy (dim+0, &cloud_->data[point_offset + cloud_->fields[field_x_idx_].offset], sizeof (float));
       memcpy (dim+1, &cloud_->data[point_offset + cloud_->fields[field_y_idx_].offset], sizeof (float));
       memcpy (dim+2, &cloud_->data[point_offset + cloud_->fields[field_z_idx_].offset], sizeof (float));
-
-#define RISE
-//#define EXPLODE
 
 #ifdef RISE
       dim[2] = dim[2] * float( pos ) / float( nSteps ) +
