@@ -634,7 +634,8 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
   vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New ();
   data->SetNumberOfComponents (3);
 #ifdef POPULATE
-  const vtkIdType nr_points = cloud_->width * cloud_->height * pos / NFRAMES;
+  const vtkIdType nr_points = cloud_->width * cloud_->height *
+                              pos * pos / ( NFRAMES * NFRAMES );
 #else
   const vtkIdType nr_points = cloud_->width * cloud_->height;
 #endif
