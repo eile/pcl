@@ -189,6 +189,10 @@ pcl::visualization::PointCloudColorHandlerRGBField<pcl::PCLPointCloud2>::getColo
       colors[j + 0] = factor * rgb_data.r + factor1 * lum;
       colors[j + 1] = factor * rgb_data.g + factor1 * lum;
       colors[j + 2] = factor * rgb_data.b + factor1 * lum;
+#else
+      colors[j + 0] = rgb_data.r;
+      colors[j + 1] = rgb_data.g;
+      colors[j + 2] = rgb_data.b;
 #endif
       j += 3;
     }
