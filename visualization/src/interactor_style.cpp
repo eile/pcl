@@ -402,10 +402,15 @@ pcl::visualization::PCLVisualizerInteractorStyle::OnKeyDown ()
           Interactor->Render ();
 #if 1
           char cam_fn[80], snapshot_fn[80];
+#ifdef NDEBUG
           sprintf (snapshot_fn, "screenshot-%04d.png" , i);
-          saveScreenshot (snapshot_fn);
-
           sprintf (cam_fn, "screenshot-%04d.cam", i);
+#else
+          sprintf (snapshot_fn, "screenshotd-%04d.png" , i);
+          sprintf (cam_fn, "screenshotd-%04d.cam", i);
+#endif
+
+          saveScreenshot (snapshot_fn);
           ofstream ofs_cam;
           ofs_cam.open (cam_fn);
           vtkSmartPointer<vtkCamera> cam = Interactor->GetRenderWindow ()->GetRenderers ()->GetFirstRenderer ()->GetActiveCamera ();

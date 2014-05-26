@@ -43,9 +43,11 @@
 #include <pcl/impl/instantiate.hpp>
 #include <pcl/point_types.h>
 
-#define RISE
+//#define RISE
 #define GRAYSCALE
+#define POPULATE
 //#define EXPLODE
+#define NMODELS 11
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +214,7 @@ pcl::visualization::PointCloudColorHandlerRGBField<pcl::PCLPointCloud2>::getColo
       j += 3;
     }
   }
-  if( ((++model) % 11) == 0 )
+  if( ((++model) % NMODELS) == 0 )
       if( ++step > nSteps )
           step = -1;
 
@@ -622,20 +624,25 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
     points = vtkSmartPointer<vtkPoints>::New ();
   points->SetDataTypeToFloat ();
 
-  vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New ();
-  data->SetNumberOfComponents (3);
-  vtkIdType nr_points = cloud_->width * cloud_->height;
-
-  // Add all points
-  vtkIdType j = 0;    // true point index
-  float* pts = static_cast<float*> (malloc (nr_points * 3 * sizeof (float)));
-  int point_offset = 0;
   static const size_t nSteps = NFRAMES;
   static size_t model = 0;
   static ssize_t step = -1;
   ssize_t pos = step;
   if( step == -1 )
       pos = 0;
+
+  vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New ();
+  data->SetNumberOfComponents (3);
+#ifdef POPULATE
+  const vtkIdType nr_points = cloud_->width * cloud_->height * pos / NFRAMES;
+#else
+  const vtkIdType nr_points = cloud_->width * cloud_->height;
+#endif
+
+  // Add all points
+  vtkIdType j = 0;    // true point index
+  float* pts = static_cast<float*> (malloc (nr_points * 3 * sizeof (float)));
+  int point_offset = 0;
 
   // If the dataset has no invalid values, just copy all of them
   if (cloud_->is_dense)
@@ -663,7 +670,7 @@ pcl::visualization::PointCloudGeometryHandler<pcl::PCLPointCloud2>::getGeometry 
       pts[i * 3 + 1] = dim[1];
       pts[i * 3 + 2] = dim[2];
     }
-    if( ((++model) % 11) == 0 )
+    if( ((++model) % NMODELS) == 0 )
         if( ++step > nSteps )
             step = -1;
 
