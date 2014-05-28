@@ -43,8 +43,8 @@
 #include <pcl/impl/instantiate.hpp>
 #include <pcl/point_types.h>
 
-//#define RISE
-#define GRAYSCALE
+#define RISE
+//#define GRAYSCALE
 #define POPULATE
 //#define EXPLODE
 #define NMODELS 11
